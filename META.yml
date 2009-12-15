@@ -1,0 +1,29 @@
+---
+abstract: 'Middleware for session management'
+author:
+  - 'Tatsuhiko Miyagawa'
+build_requires:
+  ExtUtils::MakeMaker: 6.42
+  Test::More: 0.88
+  Test::Requires: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
+distribution_type: module
+generated_by: 'Module::Install version 0.91'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Plack-Middleware-Session
+no_index:
+  directory:
+    - examples
+    - inc
+    - t
+requires:
+  Digest::SHA: 0
+  Plack: 0.9021
+  Plack::Request: 0.09
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

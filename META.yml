@@ -21,9 +21,9 @@ no_index:
     - inc
     - t
 requires:
-  Digest::SHA: 0
+  Digest::SHA1: 0
   Plack: 0.9021
   Plack::Request: 0.09
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.01
+version: 0.02

@@ -32,4 +32,5 @@ t/005_basic_w_cache_store.t
 t/006_basic_w_null_store.t
 t/010_middleware.t
 t/011_middleware_w_custom_session.t
+t/012_streaming.t
 t/lib/TestSession.pm

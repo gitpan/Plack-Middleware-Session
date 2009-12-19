@@ -2,7 +2,7 @@ package Plack::Session;
 use strict;
 use warnings;
 
-our $VERSION   = '0.01';
+our $VERSION   = '0.02';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Plack::Util::Accessor qw[
@@ -77,7 +77,7 @@ Plack::Session - Middleware for session management
 =head1 DESCRIPTION
 
 This is the core session object, you probably want to look
-at L<Plack::Middlware::Session>, unless you are writing your
+at L<Plack::Middleware::Session>, unless you are writing your
 own session middleware component.
 
 =head1 METHODS

@@ -2,7 +2,7 @@ package Plack::Session::Store::File;
 use strict;
 use warnings;
 
-our $VERSION   = '0.02';
+our $VERSION   = '0.03';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Storable ();
@@ -23,8 +23,8 @@ sub new {
     die "Storage directory (" . $params{'dir'} . ") is not writeable"
         unless -w $params{'dir'};
 
-    $params{'serializer'}   ||= sub { Storable::nstore( @_ ) };
-    $params{'deserializer'} ||= sub { Storable::retrieve( @_ ) };
+    $params{'serializer'}   ||= sub { Storable::lock_nstore( @_ ) };
+    $params{'deserializer'} ||= sub { Storable::lock_retrieve( @_ ) };
 
     bless { %params } => $class;
 }
@@ -127,7 +127,7 @@ Plack::Session::Store::File - Basic file-based session store
 
 This implements a basic file based storage for session data. By
 default it will use L<Storable> to serialize and deserialize the
-data, but this can be configured easily.
+data, but this can be configured easily. 
 
 This is a subclass of L<Plack::Session::Store> and implements
 it's full interface.
@@ -174,7 +174,7 @@ Stevan Little E<lt>stevan.little@iinteractive.comE<gt>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright 2009 Infinity Interactive, Inc.
+Copyright 2009, 2010 Infinity Interactive, Inc.
 
 L<http://www.iinteractive.com>
 

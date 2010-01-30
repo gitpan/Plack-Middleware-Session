@@ -4,31 +4,18 @@ use Test::More;
 use HTTP::Request::Common;
 use HTTP::Cookies;
 
-{
-    package My::Custom::Session;
-    use strict;
-    use warnings;
-    use parent 'Plack::Session';
-}
-
 my $app = sub {
     my $env = shift;
-
-    isa_ok($env->{'psgix.session'}, 'My::Custom::Session');
-
-    my $counter = $env->{'psgix.session'}->get('counter') || 0;
+    my $counter = $env->{'psgix.session'}->{'counter'} || 0;
 
     my $body = "Counter=$counter";
     $counter++;
-    $env->{'psgix.session'}->set(counter => $counter);
+    $env->{'psgix.session'}->{counter} = $counter;
 
     return [ 200, [], [ $body ] ];
 };
 
-$app = Plack::Middleware::Session->wrap(
-    $app,
-    session_class => 'My::Custom::Session'
-);
+$app = Plack::Middleware::Session->wrap($app);
 
 test_psgi $app, sub {
     my $cb = shift;

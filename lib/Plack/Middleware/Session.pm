@@ -2,12 +2,9 @@ package Plack::Middleware::Session;
 use strict;
 use warnings;
 
-our $VERSION   = '0.03';
+our $VERSION   = '0.09_01';
 our $AUTHORITY = 'cpan:STEVAN';
 
-use Plack::Session;
-use Plack::Request;
-use Plack::Response;
 use Plack::Util;
 use Scalar::Util;
 
@@ -16,15 +13,12 @@ use parent 'Plack::Middleware';
 use Plack::Util::Accessor qw(
     state
     store
-    session_class
 );
 
 sub prepare_app {
     my $self = shift;
 
-    $self->session_class( 'Plack::Session' ) unless $self->session_class;
-    $self->state( 'Cookie' )                 unless $self->state;
-
+    $self->state( 'Cookie' ) unless $self->state;
     $self->state( $self->inflate_backend('Plack::Session::State', $self->state) );
     $self->store( $self->inflate_backend('Plack::Session::Store', $self->store) );
 }
@@ -45,20 +39,69 @@ sub call {
     my $self = shift;
     my $env  = shift;
 
-    $env->{'psgix.session'} = $env->{'plack.session'} = $self->session_class->new(
-        state   => $self->state,
-        store   => $self->store,
-        request => Plack::Request->new( $env )
-    );
+    my($id, $session) = $self->get_session($env);
+    if ($id && $session) {
+        $env->{'psgix.session'} = $session;
+    } else {
+        $id = $self->generate_id($env);
+        $env->{'psgix.session'} = {};
+    }
+
+    $env->{'psgix.session.options'} = { id => $id };
 
     my $res = $self->app->($env);
-    $self->response_cb($res, sub {
-        my $res = Plack::Response->new(@{$_[0]});
-        $env->{'psgix.session'}->finalize( $res );
-        $res = $res->finalize;
-        $_[0]->[0] = $res->[0];
-        $_[0]->[1] = $res->[1];
-    });
+    $self->response_cb($res, sub { $self->finalize($env, $_[0]) });
+}
+
+sub get_session {
+    my($self, $env) = @_;
+
+    my $id = $self->state->extract($env)   or return;
+    my $session = $self->store->fetch($id) or return;
+
+    return ($id, $session);
+}
+
+sub generate_id {
+    my($self, $env) = @_;
+    $self->state->generate($env);
+}
+
+sub commit {
+    my($self, $env) = @_;
+
+    my $session = $env->{'psgix.session'};
+    my $options = $env->{'psgix.session.options'};
+
+    if ($options->{expire}) {
+        $self->store->remove($options->{id});
+    } else {
+        $self->store->store($options->{id}, $session);
+    }
+}
+
+sub finalize {
+    my($self, $env, $res) = @_;
+
+    my $session = $env->{'psgix.session'};
+    my $options = $env->{'psgix.session.options'};
+
+    $self->commit($env) unless $options->{no_store};
+    if ($options->{expire}) {
+        $self->expire_session($options->{id}, $res, $env);
+    } else {
+        $self->save_state($options->{id}, $res, $env);
+    }
+}
+
+sub expire_session {
+    my($self, $id, $res, $env) = @_;
+    $self->state->expire_session_id($id, $res, $env->{'psgix.session.options'});
+}
+
+sub save_state {
+    my($self, $id, $res, $env) = @_;
+    $self->state->finalize($id, $res, $env->{'psgix.session.options'});
 }
 
 1;
@@ -77,10 +120,11 @@ Plack::Middleware::Session - Middleware for session management
 
   my $app = sub {
       my $env = shift;
+      my $session = $env->{'psgix.session'};
       return [
           200,
           [ 'Content-Type' => 'text/plain' ],
-          [ 'Hello, your Session ID is ' . $env->{'psgix.session'}->id ]
+          [ "Hello, you've been here for ", $session->{counter}++, "th time!" ],
       ];
   };
 
@@ -103,16 +147,12 @@ default it will use cookies to keep session state and store data in
 memory. This distribution also comes with other state and store
 solutions. See perldoc for these backends how to use them.
 
-It should be noted that we store the current session in the
-C<psgix.session> key inside the C<$env> where you can access it
-as needed. Additionally, as of version 0.09, you can call the
-C<session> method of a L<Plack::Request> instance to fetch
-whatever is stored in C<psgix.session>.
+It should be noted that we store the current session as a hash
+reference in the C<psgix.session> key inside the C<$env> where you can
+access it as needed.
 
-B<NOTE:> As of version 0.02 the session is stored in C<psgix.session>
-instead of C<plack.session>. We still keep a copy of it in
-C<plack.session>, but this is deprecated and will be removed
-in future versions.
+B<NOTE:> As of version 0.04 the session is stored in C<psgix.session>
+instead of C<plack.session>.
 
 =head2 State
 
@@ -179,12 +219,6 @@ It should be noted that this default is an in-memory volatile store
 is only suitable for development (or single process servers). For a
 more robust solution see L<Plack::Session::Store::File> or
 L<Plack::Session::Store::Cache>.
-
-=item I<session_class>
-
-This can be used to override the actual session class. It currently
-defaults to L<Plack::Session> but you can substitute any class which
-implements the same interface.
 
 =back
 

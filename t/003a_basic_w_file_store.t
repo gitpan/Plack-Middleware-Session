@@ -3,28 +3,22 @@
 use strict;
 use warnings;
 use File::Spec;
-use Test::Requires 'YAML';
 
 use Test::More;
 
 use Plack::Request;
-use Plack::Session;
 use Plack::Session::State::Cookie;
 use Plack::Session::Store::File;
 
-use t::lib::TestSession;
+use t::lib::TestSessionHash;
 
 my $TMP = File::Spec->catdir('t', 'tmp');
 if ( !-d $TMP ) {
     mkdir $TMP;
 }
 
-t::lib::TestSession::run_all_tests(
-    store  => Plack::Session::Store::File->new(
-        dir          => $TMP,
-        serializer   => sub { YAML::DumpFile( reverse @_ ) }, # YAML takes it's args the opposite of Storable
-        deserializer => sub { YAML::LoadFile( @_ ) },
-    ),
+t::lib::TestSessionHash::run_all_tests(
+    store  => Plack::Session::Store::File->new( dir => $TMP ),
     state  => Plack::Session::State->new,
     env_cb => sub {
         open my $in, '<', \do { my $d };

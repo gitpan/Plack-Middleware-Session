@@ -2,46 +2,67 @@ package Plack::Session::State::Cookie;
 use strict;
 use warnings;
 
-our $VERSION   = '0.03';
+our $VERSION   = '0.09_01';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use parent 'Plack::Session::State';
+use Plack::Request;
+use Plack::Response;
 
 use Plack::Util::Accessor qw[
     path
     domain
     expires
     secure
+    httponly
 ];
 
-sub expire_session_id {
-    my ($self, $id) = @_;
-    $self->SUPER::expire_session_id( $id );
-    $self->expires( 0 );
+sub get_session_id {
+    my ($self, $env) = @_;
+    Plack::Request->new($env)->cookies->{$self->session_key};
 }
 
-sub get_session_id_from_request {
-    my ($self, $request) = @_;
-    ( $request->cookie( $self->session_key ) || return )->value;
+sub merge_options {
+    my($self, %options) = @_;
+
+    delete $options{id};
+
+    $options{path}     = $self->path || '/' if !exists $options{path} && defined $self->path;
+    $options{domain}   = $self->domain      if !exists $options{domain} && defined $self->domain;
+    $options{secure}   = $self->secure      if !exists $options{secure} && defined $self->secure;
+    $options{httponly} = $self->httponly    if !exists $options{httponly} && defined $self->httponly;
+
+    if (!exists $options{expires} && defined $self->expires) {
+        $options{expires} = time + $self->expires;
+    }
+
+    return %options;
+}
+
+sub expire_session_id {
+    my ($self, $id, $res, $options) = @_;
+    my %opts = $self->merge_options(%$options, expires => time);
+    $self->_set_cookie($id, $res, %opts);
 }
 
 sub finalize {
-    my ($self, $id, $response) = @_;
+    my ($self, $id, $res, $options) = @_;
+    my %opts = $self->merge_options(%$options);
+    $self->_set_cookie($id, $res, %opts);
+}
+
+sub _set_cookie {
+    my($self, $id, $res, %options) = @_;
+
+    # TODO: Do not use Plack::Response
+    my $response = Plack::Response->new($res);
     $response->cookies->{ $self->session_key } = +{
         value => $id,
-        path  => ($self->path || '/'),
-        ( defined $self->domain  ? ( domain  => $self->domain  ) : () ),
-        ( defined $self->expires ? ( expires => $self->expires ) : () ),
-        ( defined $self->secure  ? ( secure  => $self->secure  ) : () ),
+        %options,
     };
 
-    # clear the expires after
-    # finalization if the session
-    # has been expired - SL
-    $self->expires( undef )
-        if defined $self->expires
-        && $self->expires == 0
-        && $self->is_session_expired( $id );
+    my $final_r = $response->finalize;
+    $res->[1] = $final_r->[1]; # headers
 }
 
 1;
@@ -95,8 +116,9 @@ be included in the cookie.
 
 =item B<expires>
 
-Expiration time of the cookie, if nothing is supplied then it will
-not be included in the cookie.
+Expiration time of the cookie in seconds, if nothing is supplied then
+it will not be included in the cookie, which means the session expires
+per browser session.
 
 =item B<secure>
 

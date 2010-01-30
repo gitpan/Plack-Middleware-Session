@@ -2,7 +2,7 @@ package Plack::Session::State;
 use strict;
 use warnings;
 
-our $VERSION   = '0.03';
+our $VERSION   = '0.09_01';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Digest::SHA1 ();
@@ -16,7 +16,6 @@ use Plack::Util::Accessor qw[
 sub new {
     my ($class, %params) = @_;
 
-    $params{'_expired'}      ||= +{};
     $params{'session_key'}   ||= 'plack_session';
     $params{'sid_generator'} ||= sub {
         Digest::SHA1::sha1_hex(rand() . $$ . {} . time)
@@ -27,19 +26,7 @@ sub new {
 }
 
 sub expire_session_id {
-    my ($self, $id) = @_;
-    $self->{'_expired'}->{ $id }++;
-}
-
-sub is_session_expired {
-    my ($self, $id) = @_;
-    exists $self->{'_expired'}->{ $id }
-}
-
-sub check_expired {
-    my ($self, $id) = @_;
-    return if $self->is_session_expired( $id );
-    return $id;
+    my ($self, $id, $res) = @_;
 }
 
 sub validate_session_id {
@@ -48,26 +35,18 @@ sub validate_session_id {
 }
 
 sub get_session_id {
-    my ($self, $request) = @_;
-    $self->extract( $request )
-        ||
-    $self->generate( $request )
-}
-
-sub get_session_id_from_request {
-    my ($self, $request) = @_;
-    $request->param( $self->session_key );
+    my ($self, $env) = @_;
+    return Plack::Request->new($env)->param( $self->session_key );
 }
 
 sub extract {
-    my ($self, $request) = @_;
+    my ($self, $env) = @_;
 
-    my $id = $self->get_session_id_from_request( $request );
+    my $id = $self->get_session_id( $env );
     return unless defined $id;
 
-    $self->validate_session_id( $id )
-        &&
-    $self->check_expired( $id );
+    return $id if $self->validate_session_id( $id );
+    return;
 }
 
 sub generate {
@@ -77,7 +56,7 @@ sub generate {
 
 
 sub finalize {
-    my ($self, $id, $response) = @_;
+    my ($self, $id, $res, $options) = @_;
     ();
 }
 
@@ -148,16 +127,9 @@ This is a regex used to validate requested session id.
 
 =over 4
 
-=item B<get_session_id ( $request )>
+=item B<get_session_id ( $env )>
 
-Given a C<$request> this will first attempt to extract the session,
-if the is expired or does not exist, it will then generate a new
-session. The C<$request> is expected to be a L<Plack::Request> instance
-or an object with an equivalent interface.
-
-=item B<get_session_id_from_request ( $request )>
-
-This is the method used to extract the session id from a C<$request>.
+This is the method used to extract the session id from a C<$env>.
 Subclasses will often only need to override this method and the
 C<finalize> method.
 
@@ -166,14 +138,12 @@ C<finalize> method.
 This will use the C<sid_validator> regex and confirm that the
 C<$session_id> is valid.
 
-=item B<extract ( $request )>
+=item B<extract ( $env )>
 
-This will attempt to extract the session from a C<$request> by looking
-for the C<session_key> in the C<$request> params. It will then check to
+This will attempt to extract the session from a C<$env> by looking
+for the C<session_key> in the request params. It will then check to
 see if the session is valid and that it has not expired. It will return
-the session id if everything is good or undef otherwise. The C<$request>
-is expected to be a L<Plack::Request> instance or an object with an
-equivalent interface.
+the session id if everything is good or undef otherwise.
 
 =item B<generate ( $request )>
 
@@ -196,20 +166,10 @@ interface.
 
 =over 4
 
-=item B<expire_session_id ( $id )>
+=item B<expire_session_id ( $id, $response )>
 
 This will mark the session for C<$id> as expired. This method is called
 by the L<Plack::Session> C<expire> method.
-
-=item B<is_session_expired ( $id )>
-
-This will check to see if the session C<$id> has been marked as
-expired.
-
-=item B<check_expired ( $id )>
-
-Given an session C<$id> this will return C<undef> if the session is
-expired or return the C<$id> if it is not.
 
 =back
 

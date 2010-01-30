@@ -2,7 +2,7 @@ package Plack::Session::Store::File;
 use strict;
 use warnings;
 
-our $VERSION   = '0.03';
+our $VERSION   = '0.09_01';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Storable ();
@@ -30,28 +30,21 @@ sub new {
 }
 
 sub fetch {
-    my ($self, $session_id, $key) = @_;
-    my $store = $self->_deserialize( $session_id );
-    return unless exists $store->{ $key };
-    return $store->{ $key };
+    my ($self, $session_id) = @_;
+
+    my $file_path = $self->_get_session_file_path( $session_id );
+    return unless -f $file_path;
+
+    $self->deserializer->( $file_path );
 }
 
 sub store {
-    my ($self, $session_id, $key, $data) = @_;
-    my $store = $self->_deserialize( $session_id );
-    $store->{ $key } = $data;
-    $self->_serialize( $session_id, $store );
+    my ($self, $session_id, $session) = @_;
+    my $file_path = $self->_get_session_file_path( $session_id );
+    $self->serializer->( $session, $file_path );
 }
 
-sub delete {
-    my ($self, $session_id, $key) = @_;
-    my $store = $self->_deserialize( $session_id );
-    return unless exists $store->{ $key };
-    delete $store->{ $key };
-    $self->_serialize( $session_id, $store );
-}
-
-sub cleanup {
+sub remove {
     my ($self, $session_id) = @_;
     unlink $self->_get_session_file_path( $session_id );
 }
@@ -60,27 +53,6 @@ sub _get_session_file_path {
     my ($self, $session_id) = @_;
     $self->dir . '/' . $session_id;
 }
-
-sub _serialize {
-    my ($self, $session_id, $value) = @_;
-    my $file_path = $self->_get_session_file_path( $session_id );
-    $self->serializer->( $value, $file_path );
-}
-
-sub _deserialize {
-    my ($self, $session_id) = @_;
-    my $file_path = $self->_get_session_file_path( $session_id );
-    $self->_serialize( $session_id, {} ) unless -f $file_path;
-    $self->deserializer->( $file_path );
-}
-
-sub dump_session {
-    my ($self, $session_id) = @_;
-    my $file_path = $self->_get_session_file_path( $session_id );
-    return {} unless -f $file_path;
-    $self->deserializer->( $file_path );
-}
-
 
 1;
 

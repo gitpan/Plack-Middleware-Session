@@ -2,7 +2,7 @@ package Plack::Session::State::Cookie;
 use strict;
 use warnings;
 
-our $VERSION   = '0.09_01';
+our $VERSION   = '0.09_02';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use parent 'Plack::Session::State';
@@ -55,7 +55,7 @@ sub _set_cookie {
     my($self, $id, $res, %options) = @_;
 
     # TODO: Do not use Plack::Response
-    my $response = Plack::Response->new($res);
+    my $response = Plack::Response->new(@$res);
     $response->cookies->{ $self->session_key } = +{
         value => $id,
         %options,

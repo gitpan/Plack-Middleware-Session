@@ -19,6 +19,7 @@ lib/Plack/Session/State.pm
 lib/Plack/Session/State/Cookie.pm
 lib/Plack/Session/Store.pm
 lib/Plack/Session/Store/Cache.pm
+lib/Plack/Session/Store/DBI.pm
 lib/Plack/Session/Store/File.pm
 lib/Plack/Session/Store/Null.pm
 Makefile.PL
@@ -36,6 +37,7 @@ t/004_basic_file_w_customs.t
 t/004a_basic_file_w_customs.t
 t/005_basic_w_cache_store.t
 t/005a_basic_w_cache_store.t
+t/006_basic_w_dbi_store.t
 t/010_middleware.t
 t/010a_middleware.t
 t/012_streaming.t

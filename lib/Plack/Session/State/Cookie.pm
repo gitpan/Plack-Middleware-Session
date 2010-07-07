@@ -2,7 +2,7 @@ package Plack::Session::State::Cookie;
 use strict;
 use warnings;
 
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use parent 'Plack::Session::State';
@@ -92,7 +92,7 @@ Plack::Session::State::Cookie - Basic cookie-based session state
 
 =head1 DESCRIPTION
 
-This is a subclass of L<Plack::Session::State> and implements it's
+This is a subclass of L<Plack::Session::State> and implements its
 full interface. This is the default state used in
 L<Plack::Middleware::Session>.
 
@@ -102,8 +102,8 @@ L<Plack::Middleware::Session>.
 
 =item B<new ( %params )>
 
-The C<%params> can include I<path>, I<domain>, I<expires> and
-I<secure> options, as well as all the options accepted by
+The C<%params> can include I<path>, I<domain>, I<expires>, I<secure>,
+and I<httponly> options, as well as all the options accepted by
 L<Plack::Session::Store>.
 
 =item B<path>
@@ -124,6 +124,11 @@ per browser session.
 =item B<secure>
 
 Secure flag for the cookie, if nothing is supplied then it will not
+be included in the cookie.
+
+=item B<httponly>
+
+HttpOnly flag for the cookie, if nothing is supplied then it will not
 be included in the cookie.
 
 =back

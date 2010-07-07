@@ -2,7 +2,7 @@ package Plack::Session::Store::Null;
 use strict;
 use warnings;
 
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 our $AUTHORITY = 'cpan:STEVAN';
 
 sub new     { bless {} => shift }
@@ -43,7 +43,7 @@ L<Plack::Session> requires a C<store> instance, so you can use this
 one and all methods will return null.
 
 This is a subclass of L<Plack::Session::Store> and implements
-it's full interface.
+its full interface.
 
 =head1 BUGS
 

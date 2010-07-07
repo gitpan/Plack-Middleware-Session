@@ -2,7 +2,7 @@ package Plack::Session::Store::Cache;
 use strict;
 use warnings;
 
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Scalar::Util qw[ blessed ];
@@ -73,7 +73,7 @@ L<Cache> interface. This offers a lot of flexibility due to the many
 excellent L<Cache>, L<Cache::Cache> and L<CHI> drivers available.
 
 This is a subclass of L<Plack::Session::Store> and implements
-it's full interface.
+its full interface.
 
 =head1 METHODS
 

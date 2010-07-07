@@ -2,7 +2,7 @@ package Plack::Middleware::Session;
 use strict;
 use warnings;
 
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Plack::Util;
@@ -199,7 +199,7 @@ you can use this noop module.
 
 =head1 OPTIONS
 
-The following are options that can be passed to this mdoule.
+The following are options that can be passed to this module.
 
 =over 4
 

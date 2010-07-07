@@ -2,7 +2,7 @@ package Plack::Session::Store::File;
 use strict;
 use warnings;
 
-our $VERSION   = '0.11';
+our $VERSION   = '0.12';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Storable ();
@@ -102,7 +102,7 @@ default it will use L<Storable> to serialize and deserialize the
 data, but this can be configured easily. 
 
 This is a subclass of L<Plack::Session::Store> and implements
-it's full interface.
+its full interface.
 
 =head1 METHODS
 
@@ -121,14 +121,14 @@ is provided then "/tmp" is used.
 
 =item B<serializer>
 
-This is a CORE reference that implements the serialization logic.
+This is a CODE reference that implements the serialization logic.
 The CODE ref gets two arguments, the C<$value>, which is a HASH
 reference to be serialized, and the C<$file_path> to save it to.
 It is not expected to return anything.
 
 =item B<deserializer>
 
-This is a CORE reference that implements the deserialization logic.
+This is a CODE reference that implements the deserialization logic.
 The CODE ref gets one argument, the C<$file_path> to load the data
 from. It is expected to return a HASH reference.
 

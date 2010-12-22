@@ -2,7 +2,7 @@ package Plack::Middleware::Session;
 use strict;
 use warnings;
 
-our $VERSION   = '0.12';
+our $VERSION   = '0.13';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Plack::Util;
@@ -75,6 +75,10 @@ sub commit {
 
     if ($options->{expire}) {
         $self->store->remove($options->{id});
+    } elsif ($options->{change_id}) {
+        $self->store->remove($options->{id});
+        $options->{id} = $self->generate_id($env);
+        $self->store->store($options->{id}, $session);
     } else {
         $self->store->store($options->{id}, $session);
     }

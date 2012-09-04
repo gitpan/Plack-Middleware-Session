@@ -3,14 +3,15 @@ abstract: 'Middleware for session management'
 author:
   - 'Tatsuhiko Miyagawa'
 build_requires:
-  ExtUtils::MakeMaker: 6.42
-  Test::Exception: 0
+  ExtUtils::MakeMaker: 6.36
+  Test::Fatal: 0
   Test::More: 0.88
   Test::Requires: 0
 configure_requires:
-  ExtUtils::MakeMaker: 6.42
+  ExtUtils::MakeMaker: 6.36
 distribution_type: module
-generated_by: 'Module::Install version 1.00'
+dynamic_config: 1
+generated_by: 'Module::Install version 1.06'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -22,8 +23,9 @@ no_index:
     - inc
     - t
 requires:
+  Digest::HMAC_SHA1: 1.03
   Digest::SHA1: 0
   Plack: 0.9910
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.14
+version: 0.15

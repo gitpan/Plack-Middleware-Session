@@ -1,0 +1,57 @@
+{
+   "abstract" : "Middleware for session management",
+   "author" : [
+      "Tatsuhiko Miyagawa"
+   ],
+   "dynamic_config" : "0",
+   "generated_by" : "Module::Install version 1.06, CPAN::Meta::Converter version 2.120921",
+   "license" : [
+      "perl_5"
+   ],
+   "meta-spec" : {
+      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
+      "version" : "2"
+   },
+   "name" : "Plack-Middleware-Session",
+   "no_index" : {
+      "directory" : [
+         "examples",
+         "inc",
+         "t"
+      ]
+   },
+   "prereqs" : {
+      "build" : {
+         "requires" : {
+            "ExtUtils::MakeMaker" : "6.36",
+            "Test::More" : "0.88",
+            "Test::Requires" : "0"
+         }
+      },
+      "configure" : {
+         "requires" : {
+            "CPAN::Meta" : "0",
+            "ExtUtils::MakeMaker" : "6.36"
+         }
+      },
+      "runtime" : {
+         "requires" : {
+            "Digest::HMAC_SHA1" : "1.03",
+            "Digest::SHA1" : "0",
+            "Plack" : "0.9910"
+         }
+      },
+      "test" : {
+         "requires" : {
+            "Test::Fatal" : "0.006"
+         }
+      }
+   },
+   "release_status" : "stable",
+   "resources" : {
+      "license" : [
+         "http://dev.perl.org/licenses/"
+      ]
+   },
+   "version" : "0.17"
+}

@@ -1,49 +1,88 @@
 NAME
-    Plack::Session - Middleware for session management
+    Plack::Middleware::Session - Middleware for session management
 
 SYNOPSIS
-      # Use with Middleware::Session
-      enable "Session";
+      use Plack::Builder;
 
-      # later in your app
-      use Plack::Session;
       my $app = sub {
           my $env = shift;
-          my $session = Plack::Session->new($env);
+          my $session = $env->{'psgix.session'};
+          return [
+              200,
+              [ 'Content-Type' => 'text/plain' ],
+              [ "Hello, you've been here for ", $session->{counter}++, "th time!" ],
+          ];
+      };
 
-          $session->id;
-          $session->get($key);
-          $session->set($key, $value);
-          $session->remove($key);
-          $session->keys;
+      builder {
+          enable 'Session';
+          $app;
+      };
 
-          $session->expire;
+      # Or, use the File store backend (great if you use multiprocess server)
+      # For more options, see perldoc Plack::Session::Store::File
+      builder {
+          enable 'Session', store => 'File';
+          $app;
       };
 
 DESCRIPTION
-    This is the core session object, you probably want to look at
-    Plack::Middleware::Session, unless you are writing your own session
-    middleware component.
+    This is a Plack Middleware component for session management. By default
+    it will use cookies to keep session state and store data in memory. This
+    distribution also comes with other state and store solutions. See
+    perldoc for these backends how to use them.
 
-METHODS
-    new ( $env )
-        The constructor takes a PSGI request env hash reference.
+    It should be noted that we store the current session as a hash reference
+    in the "psgix.session" key inside the $env where you can access it as
+    needed.
 
-    id  This is the accessor for the session id.
+    NOTE: As of version 0.04 the session is stored in "psgix.session"
+    instead of "plack.session".
 
-  Session Data Management
-    These methods allows you to read and write the session data like Perl's
-    normal hash.
+  State
+    Plack::Session::State
+        This will maintain session state by passing the session through the
+        request params. It does not do this automatically though, you are
+        responsible for passing the session param.
 
-    get ( $key )
-    set ( $key, $value )
-    remove ( $key )
-    keys
-    session, dump
+    Plack::Session::State::Cookie
+        This will maintain session state using browser cookies.
 
-  Session Lifecycle Management
-    expire
-        This method can be called to expire the current session id.
+  Store
+    Plack::Session::Store
+        This is your basic in-memory session data store. It is volatile
+        storage and not recommended for multiprocessing environments.
+        However it is very useful for development and testing.
+
+    Plack::Session::Store::File
+        This will persist session data in a file. By default it uses
+        Storable but it can be configured to have a custom serializer and
+        deserializer.
+
+    Plack::Session::Store::Cache
+        This will persist session data using the Cache interface.
+
+    Plack::Session::Store::Null
+        Sometimes you don't care about storing session data, in that case
+        you can use this noop module.
+
+OPTIONS
+    The following are options that can be passed to this module.
+
+    *state*
+        This is expected to be an instance of Plack::Session::State or an
+        object that implements the same interface. If no option is provided
+        the default Plack::Session::State::Cookie will be used.
+
+    *store*
+        This is expected to be an instance of Plack::Session::Store or an
+        object that implements the same interface. If no option is provided
+        the default Plack::Session::Store will be used.
+
+        It should be noted that this default is an in-memory volatile store
+        is only suitable for development (or single process servers). For a
+        more robust solution see Plack::Session::Store::File or
+        Plack::Session::Store::Cache.
 
 BUGS
     All complex software has bugs lurking in it, and this module is no
@@ -51,6 +90,8 @@ BUGS
     cpan-RT.
 
 AUTHOR
+    Tatsuhiko Miyagawa
+
     Stevan Little <stevan.little@iinteractive.com>
 
 COPYRIGHT AND LICENSE

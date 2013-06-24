@@ -1,33 +1,63 @@
-Plack::Middleware::Session version 0.03
-===========================
+NAME
+    Plack::Session - Middleware for session management
 
-See the individual module documentation for more information
+SYNOPSIS
+      # Use with Middleware::Session
+      enable "Session";
 
-INSTALLATION
+      # later in your app
+      use Plack::Session;
+      my $app = sub {
+          my $env = shift;
+          my $session = Plack::Session->new($env);
 
-To install this module type the following:
+          $session->id;
+          $session->get($key);
+          $session->set($key, $value);
+          $session->remove($key);
+          $session->keys;
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+          $session->expire;
+      };
 
-DEPENDENCIES
+DESCRIPTION
+    This is the core session object, you probably want to look at
+    Plack::Middleware::Session, unless you are writing your own session
+    middleware component.
 
-This module requires these other modules and libraries:
+METHODS
+    new ( $env )
+        The constructor takes a PSGI request env hash reference.
 
-    Plack
-    Plack::Request
-    Digest::SHA1
+    id  This is the accessor for the session id.
 
-COPYRIGHT AND LICENCE
+  Session Data Management
+    These methods allows you to read and write the session data like Perl's
+    normal hash.
 
-Stevan Little <stevan.little@iinteractive.com>
+    get ( $key )
+    set ( $key, $value )
+    remove ( $key )
+    keys
+    session, dump
 
-Copyright 2009, 2010 Infinity Interactive, Inc.
+  Session Lifecycle Management
+    expire
+        This method can be called to expire the current session id.
 
-http://www.iinteractive.com
+BUGS
+    All complex software has bugs lurking in it, and this module is no
+    exception. If you find a bug please either email me, or add the bug to
+    cpan-RT.
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+AUTHOR
+    Stevan Little <stevan.little@iinteractive.com>
+
+COPYRIGHT AND LICENSE
+    Copyright 2009, 2010 Infinity Interactive, Inc.
+
+    <http://www.iinteractive.com>
+
+    This library is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
 

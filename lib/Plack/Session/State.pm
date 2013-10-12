@@ -2,11 +2,12 @@ package Plack::Session::State;
 use strict;
 use warnings;
 
-our $VERSION   = '0.20';
+our $VERSION   = '0.21';
 our $AUTHORITY = 'cpan:STEVAN';
 
 use Digest::SHA1 ();
 
+use Plack::Request;
 use Plack::Util::Accessor qw[
     session_key
     sid_generator

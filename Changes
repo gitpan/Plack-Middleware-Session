@@ -1,5 +1,8 @@
 Revision history for Perl extension Plack::Middleware::Session
 
+0.24  2014-09-05 04:47:55 PDT
+        - same as 0.23. not dev release
+
 0.23  2014-08-11 10:22:40 PDT
         - Changed the warning to error, when secret is not set.
 
